@@ -113,7 +113,8 @@ class Navia(Gtk.Window):
         geometry.min_height = 300
         self.set_geometry_hints(None, geometry, Gdk.WindowHints.MIN_SIZE)
         self.resize(width, height)
-        self.set_icon_name("icons/icon.png")
+        icon_path = os.path.join(os.path.dirname(__file__), "icons", "icon.png")
+        self.set_icon_from_file(icon_path)
         self.connect("destroy", self.on_destroy)
         self.connect("configure-event", self.on_configure_event)
         self._last_size = (width, height)
@@ -672,16 +673,29 @@ class Navia(Gtk.Window):
         print("Marcadores limpiados")
 
     def show_about(self, widget):
-        about = Gtk.MessageDialog(
-            transient_for=self,
-            flags=0,
-            message_type=Gtk.MessageType.INFO,
-            buttons=Gtk.ButtonsType.OK,
-            text="Navia Browser",
-        )
-        about.format_secondary_text("Navegador ligero usando GTK y WebKit y diseñado con IA.")
-        about.run()
-        about.destroy()
+        dialog = Gtk.Dialog(title="Acerca de Navia Browser", transient_for=self, flags=0)
+        dialog.add_button(Gtk.STOCK_OK, Gtk.ResponseType.OK)
+        box = dialog.get_content_area()
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        # Cargar la imagen
+        img_path = os.path.join(os.path.dirname(__file__), "icons", "about.png")
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(img_path, 64, 64, True)
+        image = Gtk.Image.new_from_pixbuf(pixbuf)
+        hbox.pack_start(image, False, False, 0)
+        # Texto descriptivo
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        label_title = Gtk.Label()
+        label_title.set_markup("<b>Navia Browser</b>")
+        label_title.set_xalign(0)
+        label_desc = Gtk.Label(label="Navegador ligero usando GTK y WebKit y diseñado con IA.")
+        label_desc.set_xalign(0)
+        vbox.pack_start(label_title, False, False, 0)
+        vbox.pack_start(label_desc, False, False, 0)
+        hbox.pack_start(vbox, True, True, 0)
+        box.add(hbox)
+        dialog.show_all()
+        dialog.run()
+        dialog.destroy()
 
 
 
@@ -816,7 +830,9 @@ class Navia(Gtk.Window):
                 self.entry.set_text(uri)
                 # Guardar en historial si es diferente al último
                 history = self.data.get("history", [])
-                if not history or history[-1] != uri:
+        icon_path = os.path.join(os.path.dirname(__file__), "icons", "icon.png")
+        self.set_icon_from_file(icon_path)
+        if not history or history[-1] != uri:
                     history.append(uri)
                     # Limitar historial a 100 entradas
                     if len(history) > 100:
